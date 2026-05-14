@@ -1,0 +1,8 @@
+/* MI-themed slide-header used on the Hopscotch slides:
+   logo on the right, green divider line. */
+.slide-header--mi {
+  flex-direction: row-reverse;
+}
+.slide-header--mi::after {
+  background: #22C55E;
+}
