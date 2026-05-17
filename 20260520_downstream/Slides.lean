@@ -83,16 +83,50 @@ FRO + Mathlib offsite, 20 May 2026
 
 # Hopscotch — as it is (Marcelo)
 
-* TODO — what hopscotch does
-* TODO — the local interactive workflow
-* TODO — hopscotch-action and downstream-reports
-* TODO — who is already using it, with numbers if possible
+* Three goals:
+  * Ecosystem-wide compatibility visibility for Mathlib.
+  * Good practices: stay up to date, fix one break at a time.
+  * Flexible ways for downstreams to track mathlib, accomodate different maintainer styles.
+* `hopscotch` (CLI): bisects a dependency's commit history. Finds the *culprit*, pins your manifest there. "Interactively" fix breaks one by one until you reach your target revision.
+* Two ways to put it in CI:
+  * `hopscotch-action`: a GH Action each downstream runs in its own CI. Bump PR when green, tracking issue with the *first-known-bad* revision when red. Works for any lakefile dependency.
+  * `downstream-reports`: hosted centrally at `leanprover-community`. Runs break detection across a curated set, produces historical data, ships companion actions so downstreams can consume the data without running their own bisects.
+* Today: "Curated set" of 21 downstreams tracked centrally. Dashboard at `leanprover-community.github.io/downstream-reports/`.
 
-# Hopscotch — as it will be (Marcelo)
+# Downstream reports webpage
 
-* TODO — near-term roadmap items
-* TODO — open questions / things you want feedback on
-* TODO — how this complements vs overlaps with the monorepo
+{image "img/downstream_reports.png"}[Downstream reports webpage]
+
+# Automatic bump PR
+
+{image "img/bump_pr.png"}[Automatic bump PR]
+
+# Fix PR & tracking issue
+
+{image "img/issue.png" (height := "70vh")}[Tracking issue] {image "img/fix_pr.png" (height := "70vh")}[Fix PR]
+
+# Pre-merge PR validation: `!downstream-check` (Marcelo)
+
+* Hopscotch and downstream-reports react *after* a break lands. Complementary goal: catch breakage *before* merge, from the PR conversation itself.
+* UX: a reviewer comments on a mathlib4 PR.
+  * `!downstream-check FLT, Toric --merge-branch, carleson@v1.2.3`
+  * Workflow gates on author association, dispatches one build per entry, posts a single result comment.
+* Two build modes:
+  * *LKG mode* (default): cherry-pick the PR onto the downstream's last-known-good mathlib, then build. Robust against master drift.
+  * *--merge-branch*: build against the PR's merge tree directly. Cheaper (mathlib olean cache hits), but tied to current master.
+
+{image "img/pr_validation.png"}[Downstream validation result on a mathlib PR]
+
+# Future work (Marcelo)
+
+* Better caching. Bisects rebuild a lot today; cache reuse across probes and downstreams would cut cost.
+  * move to `lake cache`
+  * cache every mathlib commit
+  * alternative cache endpoints
+* Beyond mathlib. The same machinery should work for any upstream/downstream pair (through the lakefile, that is)
+* Move off GitHub Actions? A dedicated service gives proper scheduling, persistence, and runner control.
+* Automated fixes. Small, localized culprits make AI- or heuristic-driven fix PRs tractable.
+* Expose the data to arbitrary consumers (say, REST API; not only through official GH actions)
 
 # The downstream monorepo (Joscha)
 
@@ -103,7 +137,14 @@ FRO + Mathlib offsite, 20 May 2026
 
 # How they fit together
 
-* TODO — ???
+* The main question throughout: who bears the cost when a change breaks dependents?
+* Different changes deserve different answers. The infrastructure can support both (should it?):
+* *Adaptation upfront*: break and fix ship "together".
+  * Monorepo: everything lives in one tree, ship an adaptation along with the break.
+  * `!downstream-check`: reviewers gate the merge on a green check.
+* *Ship with attribution*: accept the break, make the culprit visible, provide tooling to absorb it.
+  * `downstream-reports`: central compatibility data plus composite actions (`bump-to-latest`, `open-bump-pr`, `track-incompatibility`, `query-latest`).
+  * `hopscotch-action`: each downstream runs hopscotch in its own CI. Same outcome, no dependency on central snapshots.
 
 # Next steps — cheap but effective
 
