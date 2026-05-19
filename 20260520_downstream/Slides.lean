@@ -81,6 +81,21 @@ FRO + Mathlib offsite, 20 May 2026
 
 * TODO - what's changed recently? new automation?
 
+# The downstream monorepo(s) (Joscha)
+
+* We'll have a downstream monorepo for some set of "reference" projects (e.g. lean4, batteries, mathlib4, verso).
+* Each downstream monorepo consists of a git repository with a collection of downstream repos copied into it,
+  with their lakefiles overriden to point to the local copies of the other repos.
+* We can then point the reference project to a PR branch, and see what breaks in all the downstream repos,
+  and fix these, with a `build_all` script.
+* The monorepo tooling allows generating PRs to all the modified downstream repos.
+* We can use this to replace the `lean-pr-testing-NNNN` branches at Batteries and Mathlib,
+  and we can test all the downstream repos together.
+* We can potentially replace the `nightly-testing` branches as well.
+* Mathlib would still keep a `bump/v4.X.0` branch, which would be reviewed (possibly now renamed to `nightly`).
+* The downstream monorepo belongs to the maintainers of the reference project.
+* A monorepo for mathlib would allow us to check that a PR to mathlib doesn't break e.g. FLT, or prepare the FLT fix in sync with the Mathlib PR.
+
 # Hopscotch — as it is (Marcelo)
 
 * Three goals:
@@ -128,13 +143,6 @@ FRO + Mathlib offsite, 20 May 2026
 * Automated fixes. Small, localized culprits make AI- or heuristic-driven fix PRs tractable.
 * Expose the data to arbitrary consumers (say, REST API; not only through official GH actions)
 
-# The downstream monorepo (Joscha)
-
-* TODO — the design idea in one sentence
-* TODO — current state of leanprover/downstream
-* TODO — how it will be linked to lean4 PRs
-* TODO — what it does that hopscotch can't, and vice versa
-
 # How they fit together
 
 * The main question throughout: who bears the cost when a change breaks dependents?
@@ -146,22 +154,4 @@ FRO + Mathlib offsite, 20 May 2026
   * `downstream-reports`: central compatibility data plus composite actions (`bump-to-latest`, `open-bump-pr`, `track-incompatibility`, `query-latest`).
   * `hopscotch-action`: each downstream runs hopscotch in its own CI. Same outcome, no dependency on central snapshots.
 
-# Next steps — cheap but effective
-
-* TODO — 2-3 concrete things we could do this quarter at low cost??
-* TODO — who would own each one??
-
-# Next steps — expensive but worth doing
-
-* TODO — 1-2 ambitious items, with a sketch of cost vs payoff??
-* TODO — explicit asks of Mathlib / FRO / the broader community??
-
 # Discussion
-
-* TODO —
-
-# TODO: Stuff to mention somewhere?
-
-* lake support for diamonds
-* still don't have `lake cache`
-* crucible
