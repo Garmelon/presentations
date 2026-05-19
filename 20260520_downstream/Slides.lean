@@ -28,8 +28,8 @@ FRO + Mathlib offsite, 20 May 2026
 * The basic tension
 * The status quo
 * What's new
-  * hopscotch
   * downstream monorepo
+  * hopscotch
 * Next steps
 
 # The basic tension
@@ -109,24 +109,27 @@ So far this is a one way street: Lean changes something, and downstream reposito
 * TODO: explain what goes wrong as `nightly-testing` falls behind
 * TODO: or if `bump/nightly-YYYY-MM-DD` don't get reviewed/merged.
 
-# Updates to the Lean release process (Joscha)
+# Downstream monorepo tooling (Joscha)
 
-* TODO - what's changed recently? new automation?
+* Maintain a git repository containing copies of Lean packages that are downstream of a "reference repository"
+* Override dependencies to point to local copies and to the reference repository
+* Can be pointed to a PR branch of the reference repository to see what breaks
+* Extract local changes as PRs to the individual repositories
+* Tool for (and belongs to) maintainers of reference repository
 
-# The downstream monorepo(s) (Joscha)
+# Example: Lean monorepo
 
-* We'll have a downstream monorepo for some set of "reference" projects (e.g. lean4, batteries, mathlib4, verso).
-* Each downstream monorepo consists of a git repository with a collection of downstream repos copied into it,
-  with their lakefiles overriden to point to the local copies of the other repos.
-* We can then point the reference project to a PR branch, and see what breaks in all the downstream repos,
-  and fix these, with a `build_all` script.
-* The monorepo tooling allows generating PRs to all the modified downstream repos.
-* We can use this to replace the `lean-pr-testing-NNNN` branches at Batteries and Mathlib,
-  and we can test all the downstream repos together.
-* We can potentially replace the `nightly-testing` branches as well.
-* Mathlib would still keep a `bump/v4.X.0` branch, which would be reviewed (possibly now renamed to `nightly`).
-* The downstream monorepo belongs to the maintainers of the reference project.
-* A monorepo for mathlib would allow us to check that a PR to mathlib doesn't break e.g. FLT, or prepare the FLT fix in sync with the Mathlib PR.
+* Follow Lean `master`, acting as a sandbox on top of some downstream repos
+* Think of it like a `nightly` branch
+* Centralize `lean-pr-testing-XXXX` branches from Batteries and Mathlib
+* Regularly open PRs to downstream `nightly`/`bump` branches where present
+
+# Other applications
+
+* Verso/Batteries/Mathlib monorepos?
+  * No requirement that all downstream repos need to compile
+  * Rather, status info and a place to experiment with fixes across multiple repos
+* Simplify Mathlib nightly infrastructure using Lean monorepo?
 
 # Hopscotch — as it is (Marcelo)
 
