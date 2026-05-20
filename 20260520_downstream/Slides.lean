@@ -15,7 +15,7 @@ Kim Morrison, Marcelo Lynch, Joscha Mennicken
 
 FRO + Mathlib offsite, 20 May 2026
 
-# Lean moves fast and breaks things
+# Lean and Mathlib both move fast and break things
 
 * We're still shipping significant new features.
   We need to be able to move fast to deliver our roadmap.
@@ -41,14 +41,17 @@ FRO + Mathlib offsite, 20 May 2026
 * We also need to *review* all changes being made in Mathlib / downstream.
 * But this all needs to happen fast, or there's no usable version of Mathlib for Lean to test against.
 
+* But this isn't just about changes in Lean. Mathlib and Batteries and ... change, and break their downstreams,
+  and we need to provide a good experience.
+
 # The status quo - Lean toolchains
 
 * Lean releases a new "minor" version every month, as a release candidate.
-  * `v4.31.0-rc1` has just landed.
+  * We're currently at `v4.30.0-rc2`.
 * Each minor version is cut from a `releases/v4.X.0` branch,
   and subsequent RCs or patch versions are produced by cherry-picking commits back to this branch.
   (There's a PR label to automate backporting to the release branch.)
-* Some months there are no further RCs. Our record was `v4.29.0-rc8`.
+* Some months there are no further RCs. Our record was `v4.29.0-rc8`!
 * Usually we cut the final release of a minor version the day before the first release candidate of the next minor version.
 * We only make patch releases for critical issues.
 
@@ -57,7 +60,7 @@ FRO + Mathlib offsite, 20 May 2026
 * Today, ecosystem version coordination is done via "toolchain tags", i.e. many repositories will create a tag
   `v4.X.Y.rcK` when they first move to that toolchain.
 * In practice, this means that the `v4.X.Y-rcK` tagged repositories are mutually compatible.
-* ... but this will get harder as the ecosystem grows.
+* ... but there's no guarantee, and will get harder as the ecosystem grows.
 * This system is inflexible, and makes it hard for projects to use semantic versioning.
 * As part of the monthly release process, the FRO release manager (:wave: Joscha + Claude)
   updates a ["blessed" set](https://github.com/leanprover/lean4/blob/master/script/release/repos.py) of downstream repositories:
@@ -66,12 +69,41 @@ FRO + Mathlib offsite, 20 May 2026
 
 # The status quo - adapting downstream projects
 
-* TOOD: explain `nightly-testing` branches,
-* TODO: `bump/v4.X.0` branches (which repos use them?)
-* TODO: and how/where adaptations get reviewed, and by who (who has context/time?).
-* TODO: explain `nightly-testing-YYYY-MM-DD` tags
+* Many of the major downstream repositories maintain an *unreviewed* `nightly-testing` branch,
+  with automation that
+  1. bumps the `lean-toolchain` file to the latest Lean nightly tag
+  2. runs `lake update` to update upstream repos to their latest `nightly-testing` commits
+  3. frequently merges the default branch into the `nightly-testing` branch.
+* The goal is to get this branch back to green as quickly as possible, but it is often broken.
+* A team of FRO and MI staff, and Mathlib contributors, collaborate on this, by pushing fixes unreviewed direct to `nightly-testing`.
+
+* At Mathlib, we tag `nightly-testing-YYYY-MM-DD` the first time `nightly-testing` is green against the `nightly-YYYY-MM-DD` release of lean,
+  and `nightly-testing-green` tracks the most recent green commit on `nightly-testing`.
+
+* Prior to release day, we make sure all the relevant `nightly-testing` branches are green.
+* But: how do we review the adaptation work that accumulates on `nightly-testing`?
+
+# The status quo - reviewing adaptation work in downstream projects.
+
+* For many of the small projects, there's no additional review of adaptation work until release day,
+  when the release manager (or rather, their scripts, often driven by Claude) merges `nightly-testing` branches back into default branches.
+* Previously, this meant that I was doing this review (e.g. at `quote4`, `lean4-cli`, `doc-gen4`). As we add more downstream repos to the release process,
+  and we delegate the release process to new people (and new AIs), this becomes harder.
+  We can't rely on the release manager having the context to review all the changes in all the downstream repos.
+
+* At the major projects, in particular Batteries, Mathlib, and CSLib, we maintain also a `bump/v4.X.0` branch,
+  which (in principle!) is both
+  1. always green (caveat: we merge the default branch directly into it, without checking CI)
+  2. fully reviewed by the project maintainers.
+* We move material from `nightly-testing` to `bump/v4.X.0` branches via PRs using `bump/nightly-YYYY-MM-DD` branches
+  (essentially at the same time as we created the `nightly-testing-YYYY-MM-DD` tags).
+* In practice, often I'm reviewing and merging these PRs myself. Many people help, but if we lag too far behind a traffic jam forms and everything gets harder.
+* This is also often the first time Mathlib maintainers are seeing the adaptations, long after the underlying changes have hit Lean's master branch.
 
 # The status quo - testing against downstream projects
+
+So far this is a one way street: Lean changes something, and downstream repositories have to adapt.
+
 
 * TODO: explain how Lean PRs are automatically tested, against what?
 * TODO: explain what goes wrong as `nightly-testing` falls behind
